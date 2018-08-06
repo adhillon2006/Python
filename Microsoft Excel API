@@ -1,0 +1,18 @@
+import win32com.client
+# Create client and dispatch excel
+xl = win32com.client.Dispatch("Excel.Application")
+# Make excel visible
+xl.Visible = 1
+# Input file
+x = str(input("Enter File Name Here"))
+# Open excel file for Personal book
+x2Wb = xl.Workbooks.Open("C:/Users/adhillon/AppData/Roaming/Microsoft/Excel/XLSTART/PERSONAL.XLSB")
+# Open excel file
+xlWb = xl.Workbooks.Open("C:/Users/adhillon/OneDrive - NVIDIA Corporation/Downloads/"+x, ReadOnly=1)
+# run macro
+xl.Application.Run("PERSONAL.XLSB!TuesdayMockUp_New")
+# Save file
+xl.Application.Save()
+# turn off client
+xl.Application.Quit()
+x1 = 0
