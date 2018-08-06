@@ -6,9 +6,9 @@ xl.Visible = 1
 # Input file
 x = str(input("Enter File Name Here"))
 # Open excel file for Personal book
-x2Wb = xl.Workbooks.Open("C:/Users/adhillon/AppData/Roaming/Microsoft/Excel/XLSTART/PERSONAL.XLSB")
+x2Wb = xl.Workbooks.Open("C:/Users/UserName/AppData/Roaming/Microsoft/Excel/XLSTART/PERSONAL.XLSB")
 # Open excel file
-xlWb = xl.Workbooks.Open("C:/Users/adhillon/OneDrive - NVIDIA Corporation/Downloads/"+x, ReadOnly=1)
+xlWb = xl.Workbooks.Open("C:/Users/UserName/OneDrive - Corporation/Downloads/"+x, ReadOnly=1)
 # run macro
 xl.Application.Run("PERSONAL.XLSB!TuesdayMockUp_New")
 # Save file
