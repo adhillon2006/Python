@@ -1,0 +1,108 @@
+import os
+import pandas as pd
+import numpy as np
+
+os.chdir('C:/Users/adhillon/OneDrive - NVIDIA Corporation/Stock Data/full_history') # directory
+stock_list_file = os.listdir() # list of files
+# Master_Stock_Returns = pd.DataFrame(columns=['Stock_Name','Stock_Price','Simple_Moving(50)','Simple_Moving(200)','Above_Golden_Cross(days)'])
+# Master_Stock_Returns['Stock_Name'] = np.array([np.nan]*len(stock_list_file)).T
+
+i= 0
+for file in stock_list_file:
+    try:
+        os.chdir('C:/Users/adhillon/OneDrive - NVIDIA Corporation/Stock Data/full_history')
+        stock_data = pd.read_csv(file)
+        stock_data = stock_data.sort_index(ascending=False)
+        stock_data['simple_moving_50'] = stock_data['close'].rolling(50).mean()
+        stock_data['simple_moving_200'] = stock_data['close'].rolling(200).mean()
+        stock_data['GX/DX']= stock_data['simple_moving_50']> stock_data['simple_moving_200']# 10 indicates 50(MA) is above the 200(MA) for 10 days
+        os.chdir('C:/Users/adhillon/OneDrive - NVIDIA Corporation/Stock Data/Stock_Case_3_Time_Frame')
+        stock_data.to_csv(file,index=False)
+        i+=1
+    except IndexError:
+        i+=1
+        pass
+    except KeyError:
+        i+=1
+        pass
+
+# Part 2 of 3
+# Finds all the golden crosses and finds when it goes from GX(Golden Cross) to DX(Death Cross)
+
+os.chdir('C:/Users/adhillon/OneDrive - NVIDIA Corporation/Stock Data/Stock_Case_3_Part_1') # directory
+stock_list_file = os.listdir() # list of files
+
+Master_GX_DX = pd.DataFrame(columns=['Stock','Date','Type','1_Week','2_Week','3_Week','4_Week','8_Week','12_Week','24_Week'])
+Master_GX_DX['Type']=np.array([np.nan]*1000000)
+
+m=0
+
+for stock_file in stock_list_file:
+    i=1
+    o=2
+    stock_data = pd.read_csv(stock_file) # files
+    value_change = np.where(np.roll(stock_data['GX/DX'],1)!=stock_data['GX/DX'])[0] # gets index of change
+    for crosses in (range(1,int(len(value_change)-1))):
+        try:
+            stock_data_cal=stock_data[value_change[i]:value_change[o]]
+            if stock_data_cal['GX/DX'].unique()[0]==True: # golden cross
+                stock_data_cal['close'].reset_index(drop=True, inplace=True) # index reset
+                stock_data_cal['date'].reset_index(drop=True, inplace=True)
+                Master_GX_DX['Stock'][m] = stock_file[:-4]
+                Master_GX_DX['Date'][m] = stock_data_cal['date'][0]+' to '+stock_data_cal['date'].iloc[-1]
+                Master_GX_DX['Type'][m] = "GX"
+                Master_GX_DX['1_Week'][m]=round((stock_data_cal['close'][4]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['2_Week'][m]=round((stock_data_cal['close'][9]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['3_Week'][m]=round((stock_data_cal['close'][14]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['4_Week'][m]=round((stock_data_cal['close'][19]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['8_Week'][m]=round((stock_data_cal['close'][39]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['12_Week'][m]=round((stock_data_cal['close'][59]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['24_Week'][m]=round((stock_data_cal['close'][109]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['Date'][m] = stock_data_cal['date'][0]+' to '+stock_data_cal['date'].iloc[-1]
+                m+=1
+                i+=1
+                o+=1
+            elif stock_data_cal['GX/DX'].unique()[0]==False: # death cross
+                stock_data_cal['close'].reset_index(drop=True, inplace=True)
+                stock_data_cal['date'].reset_index(drop=True, inplace=True)
+                Master_GX_DX['Stock'][m] = stock_file[:-4]
+                Master_GX_DX['Date'][m] = stock_data_cal['date'][0]+' to '+stock_data_cal['date'].iloc[-1]
+                Master_GX_DX['Type'][m] = "DX"
+                Master_GX_DX['1_Week'][m]=round((stock_data_cal['close'][4]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['2_Week'][m]=round((stock_data_cal['close'][9]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['3_Week'][m]=round((stock_data_cal['close'][14]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['4_Week'][m]=round((stock_data_cal['close'][19]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['8_Week'][m]=round((stock_data_cal['close'][39]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['12_Week'][m]=round((stock_data_cal['close'][59]/stock_data_cal['close'][0])-1,ndigits=4)
+                Master_GX_DX['24_Week'][m]=round((stock_data_cal['close'][109]/stock_data_cal['close'][0])-1,ndigits=4)
+                o+=1
+                i+=1
+                m+=1
+        except KeyError:
+            i+=1
+            o+=1
+            m+=1
+            pass
+
+os.chdir('C:/Users/adhillon/OneDrive - NVIDIA Corporation/Stock Data/Stock_Case_3_Time_Frame')
+Master_GX_DX.to_csv('Master_Stock_Returns_Case_3_Test.csv',index=False)
+# Part 3 of 3 for Case Study 3
+os.chdir('C:/Users/adhillon/OneDrive - NVIDIA Corporation/Stock Data/Stock_Case_3_Time_Frame') # directory
+
+stock_data=pd.read_csv('Master_Stock_Returns_Case_3_Test.csv')
+
+GX_stock_data = stock_data[stock_data['Type']=='GX']
+DX_stock_data = stock_data[stock_data['Type']=='DX']
+
+list1=['1_Week','2_Week','3_Week','4_Week','8_Week','12_Week','24_Week']
+bins = [-10000,-20,-15,-10,-5,-4,-3,-2,-1,1,2,3,4,5,10,15,20,20000]
+
+for weeks in list1:
+    GX_stock_data[weeks+'_bins']= pd.cut(GX_stock_data[weeks]*100,bins)
+
+for weeks in list1:
+    DX_stock_data[weeks+'_bins']= pd.cut(DX_stock_data[weeks]*100,bins)
+
+
+DX_stock_data.to_csv('Death_Cross.csv')
+GX_stock_data.to_csv('Golden_Cross.csv')
